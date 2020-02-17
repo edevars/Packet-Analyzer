@@ -30,6 +30,12 @@ volatile int cont_pause;
 volatile int cont_secmac;
 int number_of_packages;
 
+struct directions
+{
+    unsigned char dest[6];
+    unsigned char source[6];
+};
+
 struct ethernet_frame_args
 {
     un_char *buffer;
@@ -37,7 +43,10 @@ struct ethernet_frame_args
     int paq_ID;
 };
 
-un_char getBit(un_char c, int k)
+struct directions arr_directions[1000];
+
+un_char
+getBit(un_char c, int k)
 {
     return (c >> k) & ((un_char)1);
 }
@@ -68,8 +77,6 @@ un_int permut_half(un_int n)
     un_int mask = 255;
     return ((mask & n) << 8) | aux;
 }
-
-
 
 bool isUnicast(un_char *dest)
 {
@@ -114,6 +121,8 @@ void *read_packages(void *struct_args)
 {
     struct ethernet_frame_args *args = (struct ethernet_frame_args *)struct_args;
 
+    int id = args->paq_ID - 1;
+
     struct ethhdr *eth;
     memset(&eth, 0, sizeof(eth));
 
@@ -123,6 +132,27 @@ void *read_packages(void *struct_args)
     fprintf(fptr, "\nPaquete %d\n \tDir. fuente : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n \tDir. destino : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
             args->paq_ID, eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5],
             eth->h_dest[0], eth->h_dest[1], eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
+
+    int index_source = (id - 1) * 2;
+    int index_dest = ((id - 1) * 2) + 1;
+
+    memcpy(arr_directions[index_source].source, eth->h_source, 6);
+    memcpy(arr_directions[index_dest].dest, eth->h_dest, 6);
+
+    // printf("\n\nFrom Eth: %X:%X:%X:%X:%X:%X:",
+    //        eth->h_dest[0],
+    //        eth->h_dest[1],
+    //        eth->h_dest[2],
+    //        eth->h_dest[3],
+    //        eth->h_dest[4],
+    //        eth->h_dest[5]);
+    // printf("\nFrom direc: %X:%X:%X:%X:%X:%X:",
+    //        arr_directions[index_dest].dest[0],
+    //        arr_directions[index_dest].dest[1],
+    //        arr_directions[index_dest].dest[2],
+    //        arr_directions[index_dest].dest[3],
+    //        arr_directions[index_dest].dest[4],
+    //        arr_directions[index_dest].dest[5]);
 
     if (isUnicast(eth->h_dest))
     {
@@ -143,6 +173,7 @@ void *read_packages(void *struct_args)
         cont_ethr2++;
 
         fprintf(fptr, "\t|-Protocolo : 0x%.2X (%d) ",
+
                 permut_half(eth->h_proto), permut_half(eth->h_proto));
 
         if (permut_half(eth->h_proto) == ETH_P_IP)
@@ -171,11 +202,10 @@ void *read_packages(void *struct_args)
         }
 
         fprintf(fptr, " \t| Longitud de la trama: %d\n", (un_int)args->recv_len);
-        
-        un_int payload_len = (un_int)args->recv_len - 18; 
+
+        un_int payload_len = (un_int)args->recv_len - 18;
         fprintf(fptr, " \t| Longitud de carga util: %d\n", payload_len);
     }
-
 }
 
 void print_final_info()
@@ -220,7 +250,6 @@ int main(int argc, char const *argv[])
         int sock_id, i, recv_len;
         un_char *buffer[number_of_packages];
 
-
         sock_id = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 
         if (sock_id < 0)
@@ -261,7 +290,7 @@ int main(int argc, char const *argv[])
             hargs[i]->buffer = buffer[i];
             hargs[i]->recv_len = recv_len;
             hargs[i]->paq_ID = i + 1;
-            
+
             if (pthread_create(&sniffer_thread, NULL, &read_packages, (void *)hargs[i]) < 0)
             {
                 perror("couldnt create thread");
@@ -286,7 +315,7 @@ int main(int argc, char const *argv[])
 
         system(order);
 
-        system("cat data.txt");
+        // system("cat data.txt");
     }
 
     return 0;
