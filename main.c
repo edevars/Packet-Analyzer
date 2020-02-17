@@ -133,26 +133,8 @@ void *read_packages(void *struct_args)
             args->paq_ID, eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5],
             eth->h_dest[0], eth->h_dest[1], eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
 
-    int index_source = (id - 1) * 2;
-    int index_dest = ((id - 1) * 2) + 1;
-
-    memcpy(arr_directions[index_source].source, eth->h_source, 6);
-    memcpy(arr_directions[index_dest].dest, eth->h_dest, 6);
-
-    // printf("\n\nFrom Eth: %X:%X:%X:%X:%X:%X:",
-    //        eth->h_dest[0],
-    //        eth->h_dest[1],
-    //        eth->h_dest[2],
-    //        eth->h_dest[3],
-    //        eth->h_dest[4],
-    //        eth->h_dest[5]);
-    // printf("\nFrom direc: %X:%X:%X:%X:%X:%X:",
-    //        arr_directions[index_dest].dest[0],
-    //        arr_directions[index_dest].dest[1],
-    //        arr_directions[index_dest].dest[2],
-    //        arr_directions[index_dest].dest[3],
-    //        arr_directions[index_dest].dest[4],
-    //        arr_directions[index_dest].dest[5]);
+    memcpy(arr_directions[id].source, eth->h_source, 6);
+    memcpy(arr_directions[id].dest, eth->h_dest, 6);
 
     if (isUnicast(eth->h_dest))
     {
@@ -314,6 +296,25 @@ int main(int argc, char const *argv[])
         printf("\nEjecutando: %s\n", order);
 
         system(order);
+
+        for (i = 0; i < number_of_packages; i++)
+        {
+            printf("\n\nFrom directions source  %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+                   arr_directions[i].source[0],
+                   arr_directions[i].source[1],
+                   arr_directions[i].source[2],
+                   arr_directions[i].source[3],
+                   arr_directions[i].source[4],
+                   arr_directions[i].source[5]);
+
+            printf("\nFrom directions destiny  %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+                   arr_directions[i].dest[0],
+                   arr_directions[i].dest[1],
+                   arr_directions[i].dest[2],
+                   arr_directions[i].dest[3],
+                   arr_directions[i].dest[4],
+                   arr_directions[i].dest[5]);
+        }
 
         // system("cat data.txt");
     }
