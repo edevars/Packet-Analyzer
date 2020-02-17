@@ -22,14 +22,13 @@ typedef unsigned int un_int;
 typedef unsigned long long un_long;
 
 FILE *fptr;
-volatile int cont_ethr2;
+volatile int cont_ethr2 = 0;
 volatile int cont_ip;
 volatile int cont_ip6;
 volatile int cont_arp;
 volatile int cont_pause;
 volatile int cont_secmac;
 int number_of_packages;
-un_long *array_hash;
 
 struct ethernet_frame_args
 {
@@ -42,6 +41,7 @@ un_char getBit(un_char c, int k)
 {
     return (c >> k) & ((un_char)1);
 }
+
 un_int getBit_i(un_int c, int k)
 {
     return (c >> k) & ((un_int)1);
@@ -69,59 +69,7 @@ un_int permut_half(un_int n)
     return ((mask & n) << 8) | aux;
 }
 
-un_long hash(un_char *str)
-{
-    un_long hash = 5381;
-    int c;
 
-    while (c = *str++)
-        hash = ((hash << 5) + hash) + c; 
-
-    return hash;
-}
-
-void addHash(un_char *esource, un_char *edest, int paq_ID)
-{
-    un_char str[12];
-    int i_;
-    for (i_ = 0; i_ < 6; i_++)
-    {
-        str[i_] = esource[i_];
-        str[i_ + 6] = edest[i_];
-    }
-    array_hash[paq_ID] = hash(str);
-}
-
-void print_reps()
-{
-    int i, j;
-    int array_reps[number_of_packages];
-    for (i = 0; i < number_of_packages; i++)
-        array_reps[i] = 0;
- 
-    un_long mask_repetidos = 0;
-    for (i = 0; i < number_of_packages; i++)
-    {
-        mask_repetidos |= ((un_long)1) << i;
-        for (j = 0; j < number_of_packages; j++)
-        {
-            if (i != j && getBit_l(mask_repetidos, j) == 0)
-            {
-                // Si aun no contado como repetido:
-                if (array_hash[i] == array_hash[j])
-                {
-                    array_reps[i]++;
-                    // Actualizamos mascara
-                    mask_repetidos |= ((un_long)1) << j;
-                }
-            }
-        }
-        if (array_reps[i] > 0)
-        {
-            fprintf(fptr, " *****\tLa dupla de direcciones MAC de %d tuvo %d apariciones\n", i + 1, array_reps[i] + 1);
-        }
-    }
-}
 
 bool isUnicast(un_char *dest)
 {
@@ -171,7 +119,6 @@ void *read_packages(void *struct_args)
 
     // CABECERA ETHERNET:
     eth = (struct ethhdr *)args->buffer;
-    addHash(eth->h_source, eth->h_dest, args->paq_ID);
 
     fprintf(fptr, "\nPaquete %d\n \tDir. fuente : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n \tDir. destino : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
             args->paq_ID, eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5],
@@ -191,7 +138,7 @@ void *read_packages(void *struct_args)
     }
     identify_protocol(permut_half(eth->h_proto));
 
-    if (eth->h_proto > 1535)
+    if (eth->h_proto < 1535)
     { // Trama Ethernet II: 1535
         cont_ethr2++;
 
@@ -214,7 +161,7 @@ void *read_packages(void *struct_args)
         {
             fprintf(fptr, " es Contrl de Flujo\n"); //   cont_pause++;
         }
-        else if (permut_half(eth->h_proto) == 0x88E5)
+        else if (permut_half(eth->h_proto) == ETH_P_MACSEC)
         {
             fprintf(fptr, " es Sec. MAC\n"); //  cont_secmac++;
         }
@@ -223,6 +170,8 @@ void *read_packages(void *struct_args)
             fprintf(fptr, " \tNinguno de esos protocolos de capa superior.\n");
         }
 
+        fprintf(fptr, " \t| Longitud de la trama: %d\n", (un_int)args->recv_len);
+        
         un_int payload_len = (un_int)args->recv_len - 18; 
         fprintf(fptr, " \t| Longitud de carga util: %d\n", payload_len);
     }
@@ -236,7 +185,6 @@ void print_final_info()
             number_of_packages, cont_ethr2, (number_of_packages - cont_ethr2));
     fprintf(fptr, "\n\tIPv4: %d \n\tIPv6: %d \n\tARP: %d \n\tControl de flujo: %d \n\tSeg. MAC: %d\t\n\n",
             cont_ip, cont_ip6, cont_arp, cont_pause, cont_secmac);
-    print_reps();
 }
 
 void setPromiscuousMode(char card_name[], int id_socket)
@@ -271,7 +219,7 @@ int main(int argc, char const *argv[])
         cont_ethr2 = cont_ip = cont_arp = cont_ip6 = cont_pause = cont_secmac = 0;
         int sock_id, i, recv_len;
         un_char *buffer[number_of_packages];
-        array_hash = (un_long *)malloc(sizeof(un_long) * number_of_packages);
+
 
         sock_id = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 
@@ -313,6 +261,7 @@ int main(int argc, char const *argv[])
             hargs[i]->buffer = buffer[i];
             hargs[i]->recv_len = recv_len;
             hargs[i]->paq_ID = i + 1;
+            
             if (pthread_create(&sniffer_thread, NULL, &read_packages, (void *)hargs[i]) < 0)
             {
                 perror("couldnt create thread");
