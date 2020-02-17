@@ -1,0 +1,116 @@
+
+Paquete 1
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 2
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 4
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 5
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 7
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 9
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 10
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 6
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 8
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 3
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 11
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 12
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 13
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 14
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 15
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 16
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 17
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 18
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 19
+ 	Dir. fuente : 00:1F:45:A0:9A:84
+ 	Dir. destino : 58:FB:84:D1:BD:2A
+ 	+ Tipo direccion: Multidifusion
+
+Paquete 20
+ 	Dir. fuente : 58:FB:84:D1:BD:2A
+ 	Dir. destino : 00:1F:45:A0:9A:84
+ 	+ Tipo direccion: Multidifusion
+
+INFORMACIÓN FINAL
+
+TRAMAS CAPTURADAS : 20, 
+TRAMAS ETHERNET II ANALIZADAS : 0, 
+TRAMAS 802.3 NO ANALIZADAS : 20 
+
+
+	IPv4: 20 
+	IPv6: 0 
+	ARP: 0 
+	Control de flujo: 0 
+	Seg. MAC: 0	
+
+ *****	La dupla de direcciones MAC de 2 tuvo 10 apariciones
+ *****	La dupla de direcciones MAC de 4 tuvo 9 apariciones

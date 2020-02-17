@@ -13,7 +13,7 @@
 #include <pthread.h>
 #include <linux/ip.h>
 #include <unistd.h>
-#define ETH_LEN 1600
+#define ETH_LEN 1535
 struct ifreq ethreq;
 
 // Definición de tipos de variables
@@ -75,8 +75,8 @@ un_long hash(un_char *str)
     int c;
 
     while (c = *str++)
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-    //printf("%llu\n", hash);
+        hash = ((hash << 5) + hash) + c; 
+
     return hash;
 }
 
@@ -98,7 +98,7 @@ void print_reps()
     int array_reps[number_of_packages];
     for (i = 0; i < number_of_packages; i++)
         array_reps[i] = 0;
-    //memset(&array_reps, 0, sizeof(array_reps));
+ 
     un_long mask_repetidos = 0;
     for (i = 0; i < number_of_packages; i++)
     {
@@ -173,7 +173,7 @@ void *read_packages(void *struct_args)
     eth = (struct ethhdr *)args->buffer;
     addHash(eth->h_source, eth->h_dest, args->paq_ID);
 
-    fprintf(fptr, "\n[%d] Cabecera Ethernet --------------------\n \t|-Dir. fuente : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n \t|-Dir. destino : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
+    fprintf(fptr, "\nPaquete %d\n \tDir. fuente : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n \tDir. destino : %.2X:%.2X:%.2X:%.2X:%.2X:%.2X\n",
             args->paq_ID, eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5],
             eth->h_dest[0], eth->h_dest[1], eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
 
@@ -190,68 +190,51 @@ void *read_packages(void *struct_args)
         fprintf(fptr, " \t+ Tipo direccion: Multidifusion\n");
     }
     identify_protocol(permut_half(eth->h_proto));
-    // CABECERA IP:
+
     if (eth->h_proto > 1535)
     { // Trama Ethernet II: 1535
         cont_ethr2++;
 
-        struct iphdr *ip = (struct iphdr *)(args->buffer + sizeof(struct ethhdr));
-        struct sockaddr_in source, dest;
-        memset(&source, 0, sizeof(source));
-        source.sin_addr.s_addr = ip->saddr;
-        memset(&dest, 0, sizeof(dest));
-        dest.sin_addr.s_addr = ip->daddr;
-
         fprintf(fptr, "\t|-Protocolo : 0x%.2X (%d) ",
                 permut_half(eth->h_proto), permut_half(eth->h_proto));
-        //printNum(eth->h_proto);
-        //fprintf(fptr, " \t| %s\n", identifica_protocolo(eth->h_proto));
+
         if (permut_half(eth->h_proto) == ETH_P_IP)
         {
-            fprintf(fptr, " *** IPv4\n"); //  cont_ip++;
+            fprintf(fptr, " es IPv4\n"); //  cont_ip++;
         }
         else if (permut_half(eth->h_proto) == ETH_P_IPV6)
         {
-            fprintf(fptr, " *** IPv6\n"); //  cont_ip6++;
+            fprintf(fptr, " es IPv6\n"); //  cont_ip6++;
         }
         else if (permut_half(eth->h_proto) == ETH_P_ARP)
         {
-            fprintf(fptr, " *** ARP\n"); //   cont_arp++;
+            fprintf(fptr, " es ARP\n"); //   cont_arp++;
         }
         else if (permut_half(eth->h_proto) == ETH_P_PAUSE)
         {
-            fprintf(fptr, " *** Contrl de Flujo\n"); //   cont_pause++;
+            fprintf(fptr, " es Contrl de Flujo\n"); //   cont_pause++;
         }
         else if (permut_half(eth->h_proto) == 0x88E5)
         {
-            fprintf(fptr, " *** Sec. MAC\n"); //  cont_secmac++;
+            fprintf(fptr, " es Sec. MAC\n"); //  cont_secmac++;
         }
         else
         {
-            fprintf(fptr, " \t*** Ninguno de esos protocolos de capa superior.\n");
+            fprintf(fptr, " \tNinguno de esos protocolos de capa superior.\n");
         }
 
-        un_int payload_len = (un_int)args->recv_len - 18; // 6 & 6 Bytes MAc, 2B Type, 4B CRC
+        un_int payload_len = (un_int)args->recv_len - 18; 
         fprintf(fptr, " \t| Longitud de carga util: %d\n", payload_len);
-
-        fprintf(fptr, "    Cabecera IP\n \t|-Version : %d\n", (un_int)ip->version);
-        //fprintf(fptr, "%\t|-Internet Header Length : %d DWORDS or %d Bytes\n\t|-Tipo de Servicio : %d\n", (ui)ip->ihl,((ui)(ip->ihl))*4,  (ui)ip->tos);
-        //fprintf(fptr , "\t|-Longitud total : %d Bytes (%d)\n",ntohs(ip->tot_len), args->recv_len);
-        fprintf(fptr, "\t|-Identificacion : %d\n", ntohs(ip->id));
-        //fprintf(fptr , "\t|-Tiempo de vida : %d\n",(ui)ip->ttl);
-        //fprintf(fptr , "\t|-Protocolo : 0x%.2X (%d)\n", ip->protocol, (ui)ip->protocol);
-        //fprintf(fptr , "\t|-Header Checksum : %d\n",ntohs(ip->check));
-        fprintf(fptr, "\t|-IP fuente : %s\n", inet_ntoa(source.sin_addr));
-        fprintf(fptr, "\t|-IP destino : %s\n", inet_ntoa(dest.sin_addr));
     }
-    //fclose(fptr);
+
 }
 
 void print_final_info()
 {
-    fprintf(fptr, "\n***** TRAMAS CAPTURADAS : %d, \tTRAMAS ETHERNET II ANALIZADAS : %d, \tTRAMAS 802.3 NO ANALIZADAS : %d *****\n\n",
+    fprintf(fptr, "\nINFORMACIÓN FINAL\n");
+    fprintf(fptr, "\nTRAMAS CAPTURADAS : %d, \nTRAMAS ETHERNET II ANALIZADAS : %d, \nTRAMAS 802.3 NO ANALIZADAS : %d \n\n",
             number_of_packages, cont_ethr2, (number_of_packages - cont_ethr2));
-    fprintf(fptr, "*****\tIPv4: %d\tIPv6: %d\tARP: %d\tControl de flujo: %d\tSeg. MAC: %d\t*****\n\n",
+    fprintf(fptr, "\n\tIPv4: %d \n\tIPv6: %d \n\tARP: %d \n\tControl de flujo: %d \n\tSeg. MAC: %d\t\n\n",
             cont_ip, cont_ip6, cont_arp, cont_pause, cont_secmac);
     print_reps();
 }
@@ -271,7 +254,7 @@ int main(int argc, char const *argv[])
 
     if (existArguments == true)
     {
-        printf("All is ok! the arguments are: \npackages: %s \nnetwork card name: %s\n", argv[1], argv[2]);
+        printf("ok! los argumentos son: \npackages: %s \nnetwork card name: %s\n", argv[1], argv[2]);
 
         number_of_packages = atoi(argv[1]);
         char card_name[100];
@@ -307,24 +290,26 @@ int main(int argc, char const *argv[])
 
         pthread_t sniffer_thread;
         struct ethernet_frame_args *hargs[number_of_packages];
+
+        // Iniciar el arreglo de la estructura
         for (i = 0; i < number_of_packages; ++i)
         {
             hargs[i] = (struct ethernet_frame_args *)malloc(sizeof(struct ethernet_frame_args *));
             buffer[i] = (un_char *)malloc(ETH_LEN);
             memset(buffer[i], 0, sizeof(buffer[i]));
         }
+
         for (i = 0; i < number_of_packages; ++i)
         {
 
-            // Empezamos a recibir de todo:
+            // Empezamos a recibir todo:
             recv_len = recvfrom(sock_id, buffer[i], ETH_LEN, 0, (struct sockaddr *)&sadd, (socklen_t *)&sadd_len);
             if (recv_len < 0)
             {
                 perror("Error in recvfrom...");
                 return -1;
             }
-            //printf("\nSomething received. \n");
-            //buffer[recv_len] = '\0';
+
             hargs[i]->buffer = buffer[i];
             hargs[i]->recv_len = recv_len;
             hargs[i]->paq_ID = i + 1;
@@ -344,7 +329,7 @@ int main(int argc, char const *argv[])
         print_final_info();
         fclose(fptr);
 
-        // Restore to initial settings the network card
+        // Restaurar valores iniciales de la tarjeta
         char order[] = "/sbin/ifconfig ";
         strcat(order, card_name);
         strcat(order, " -promisc\n");
