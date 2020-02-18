@@ -268,7 +268,7 @@ void setPromiscuousMode(char card_name[], int id_socket)
     ioctl(id_socket, SIOCGIFFLAGS, &ethreq);
     ethreq.ifr_flags |= IFF_PROMISC;
     ioctl(id_socket, SIOCSIFFLAGS, &ethreq);
-    printf("\nSetting promiscuous mode");
+    printf("\nACTIVANDO MODO PROMISCUO\n\n");
 }
 
 int main(int argc, char const *argv[])
@@ -277,7 +277,7 @@ int main(int argc, char const *argv[])
 
     if (existArguments == true)
     {
-        printf("ok! los argumentos son: \npackages: %s \nnetwork card name: %s\n", argv[1], argv[2]);
+        printf("\n\nOK! los argumentos son: \npackages: %s \nnetwork card name: %s\n", argv[1], argv[2]);
 
         number_of_packages = atoi(argv[1]);
         char card_name[100];
@@ -287,7 +287,7 @@ int main(int argc, char const *argv[])
         fptr = fopen("data.txt", "w");
         if (fptr == NULL)
         {
-            perror("Could not open file.\n\n");
+            perror("No se pudo abrir el archivo.\n\n");
             return -1;
         }
 
@@ -299,7 +299,7 @@ int main(int argc, char const *argv[])
 
         if (sock_id < 0)
         {
-            perror("error in socket\n");
+            perror("error en socket\n");
             return -1;
         }
 
@@ -328,7 +328,7 @@ int main(int argc, char const *argv[])
             recv_len = recvfrom(sock_id, buffer[i], ETH_LEN, 0, (struct sockaddr *)&sadd, (socklen_t *)&sadd_len);
             if (recv_len < 0)
             {
-                perror("Error in recvfrom...");
+                perror("Error en recvfrom...");
                 return -1;
             }
 
@@ -338,7 +338,7 @@ int main(int argc, char const *argv[])
 
             if (pthread_create(&sniffer_thread, NULL, &read_packages, (void *)hargs[i]) < 0)
             {
-                perror("couldnt create thread");
+                perror("No se pudo crear el hilo");
                 return -1;
             }
         }
