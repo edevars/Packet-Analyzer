@@ -30,10 +30,12 @@ volatile int cont_pause;
 volatile int cont_secmac;
 int number_of_packages;
 
-struct directions
+unsigned char directions[1000][6];
+
+struct finded_dir
 {
-    unsigned char dest[6];
-    unsigned char source[6];
+    un_char dir[6];
+    int reps;
 };
 
 struct ethernet_frame_args
@@ -42,8 +44,6 @@ struct ethernet_frame_args
     int recv_len;
     int paq_ID;
 };
-
-struct directions arr_directions[1000];
 
 un_char
 getBit(un_char c, int k)
@@ -117,6 +117,95 @@ void identify_protocol(un_int proto)
     }
 }
 
+void print_reps(int number_of_packages)
+{
+    int i, j, limit, addcount;
+    int total_packages = number_of_packages * 2;
+    struct finded_dir ok_dirs[total_packages * 2];
+
+    memcpy(ok_dirs[0].dir, directions[0], 6);
+    ok_dirs[0].reps = 1;
+
+    for (i = 0; i <= total_packages; i++)
+    {
+        printf("\nFrom directions %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+               directions[i][0],
+               directions[i][1],
+               directions[i][2],
+               directions[i][3],
+               directions[i][4],
+               directions[i][5]);
+    }
+    printf("\n\nCalculando repeticiones");
+
+    // ----------------------------------------------------------------
+
+    i = j = limit = addcount = 0;
+
+    while (j <= total_packages)
+    {
+        if (memcmp(ok_dirs[i].dir, directions[j], 6) == 0)
+        {
+            j++;
+            i=0;
+        }
+        else if (memcmp(ok_dirs[i].dir, directions[j], 6) != 0 && limit != i)
+        {
+            i++;
+        }
+        else if (memcmp(ok_dirs[i].dir, directions[j], 6) != 0 && limit == i)
+        {
+            memcpy(ok_dirs[i + 1].dir, directions[j], 6);
+            addcount++;
+            j++;
+            limit++;
+            i = 0;
+        }
+    }
+
+    for (i = 0; i <= addcount; i++)
+    {
+        printf("\nFrom ok dirs %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+               ok_dirs[i].dir[0],
+               ok_dirs[i].dir[1],
+               ok_dirs[i].dir[2],
+               ok_dirs[i].dir[3],
+               ok_dirs[i].dir[4],
+               ok_dirs[i].dir[5]);
+    }
+
+    // ----------------------------------------------------------------
+
+    // printf("\n\nSe encontraron %d direcciones diferentes", added_len);
+    // for (i = 0; i < total_packages; i++)
+    // {
+    //     printf("\nFrom directions %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+    //            ok_dirs[i].dir[0],
+    //            ok_dirs[i].dir[1],
+    //            ok_dirs[i].dir[2],
+    //            ok_dirs[i].dir[3],
+    //            ok_dirs[i].dir[4],
+    //            ok_dirs[i].dir[5]);
+    // }
+    // for (i = 0; i < number_of_packages * 2; i++)
+    // {
+
+    //     if (memcmp(ok_dirs[0].dir, directions[i], 6) == 0)
+    //     {
+    //         printf("\n\nHubo una coincidencia\n\n");
+    //         ok_dirs[0].reps++;
+    //     }
+
+    //     printf("\nFrom directions %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
+    //            directions[i][0],
+    //            directions[i][1],
+    //            directions[i][2],
+    //            directions[i][3],
+    //            directions[i][4],
+    //            directions[i][5]);
+    // }
+}
+
 void *read_packages(void *struct_args)
 {
     struct ethernet_frame_args *args = (struct ethernet_frame_args *)struct_args;
@@ -133,8 +222,8 @@ void *read_packages(void *struct_args)
             args->paq_ID, eth->h_source[0], eth->h_source[1], eth->h_source[2], eth->h_source[3], eth->h_source[4], eth->h_source[5],
             eth->h_dest[0], eth->h_dest[1], eth->h_dest[2], eth->h_dest[3], eth->h_dest[4], eth->h_dest[5]);
 
-    memcpy(arr_directions[id].source, eth->h_source, 6);
-    memcpy(arr_directions[id].dest, eth->h_dest, 6);
+    memcpy(directions[id * 2], eth->h_source, 6);
+    memcpy(directions[(id * 2) + 1], eth->h_dest, 6);
 
     if (isUnicast(eth->h_dest))
     {
@@ -296,26 +385,7 @@ int main(int argc, char const *argv[])
         printf("\nEjecutando: %s\n", order);
 
         system(order);
-
-        for (i = 0; i < number_of_packages; i++)
-        {
-            printf("\n\nFrom directions source  %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-                   arr_directions[i].source[0],
-                   arr_directions[i].source[1],
-                   arr_directions[i].source[2],
-                   arr_directions[i].source[3],
-                   arr_directions[i].source[4],
-                   arr_directions[i].source[5]);
-
-            printf("\nFrom directions destiny  %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-                   arr_directions[i].dest[0],
-                   arr_directions[i].dest[1],
-                   arr_directions[i].dest[2],
-                   arr_directions[i].dest[3],
-                   arr_directions[i].dest[4],
-                   arr_directions[i].dest[5]);
-        }
-
+        print_reps(number_of_packages);
         // system("cat data.txt");
     }
 
