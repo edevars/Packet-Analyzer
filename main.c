@@ -126,18 +126,6 @@ void print_reps(int number_of_packages)
     memcpy(ok_dirs[0].dir, directions[0], 6);
     ok_dirs[0].reps = 1;
 
-    for (i = 0; i <= total_packages; i++)
-    {
-        printf("\nFrom directions %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-               directions[i][0],
-               directions[i][1],
-               directions[i][2],
-               directions[i][3],
-               directions[i][4],
-               directions[i][5]);
-    }
-    printf("\n\nCalculando repeticiones");
-
     // ----------------------------------------------------------------
 
     i = j = limit = addcount = 0;
@@ -147,7 +135,7 @@ void print_reps(int number_of_packages)
         if (memcmp(ok_dirs[i].dir, directions[j], 6) == 0)
         {
             j++;
-            i=0;
+            i = 0;
         }
         else if (memcmp(ok_dirs[i].dir, directions[j], 6) != 0 && limit != i)
         {
@@ -163,47 +151,30 @@ void print_reps(int number_of_packages)
         }
     }
 
-    for (i = 0; i <= addcount; i++)
+    for (i = 0; i < addcount; i++)
     {
-        printf("\nFrom ok dirs %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-               ok_dirs[i].dir[0],
-               ok_dirs[i].dir[1],
-               ok_dirs[i].dir[2],
-               ok_dirs[i].dir[3],
-               ok_dirs[i].dir[4],
-               ok_dirs[i].dir[5]);
+        ok_dirs[i].reps = 0;
+        for (j = 0; j < total_packages; j++)
+        {
+            if (memcmp(ok_dirs[i].dir, directions[j], 6) == 0)
+            {
+                ok_dirs[i].reps++;
+            }
+        }
     }
 
-    // ----------------------------------------------------------------
+    for (i = 0; i < addcount; i++)
+    {
+        fprintf(fptr, "\nLa direccion %.2X:%.2X:%.2X:%.2X:%.2X:%.2X tuvo %d repeticiones",
+                ok_dirs[i].dir[0],
+                ok_dirs[i].dir[1],
+                ok_dirs[i].dir[2],
+                ok_dirs[i].dir[3],
+                ok_dirs[i].dir[4],
+                ok_dirs[i].dir[5],
+                ok_dirs[i].reps);
+    }
 
-    // printf("\n\nSe encontraron %d direcciones diferentes", added_len);
-    // for (i = 0; i < total_packages; i++)
-    // {
-    //     printf("\nFrom directions %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-    //            ok_dirs[i].dir[0],
-    //            ok_dirs[i].dir[1],
-    //            ok_dirs[i].dir[2],
-    //            ok_dirs[i].dir[3],
-    //            ok_dirs[i].dir[4],
-    //            ok_dirs[i].dir[5]);
-    // }
-    // for (i = 0; i < number_of_packages * 2; i++)
-    // {
-
-    //     if (memcmp(ok_dirs[0].dir, directions[i], 6) == 0)
-    //     {
-    //         printf("\n\nHubo una coincidencia\n\n");
-    //         ok_dirs[0].reps++;
-    //     }
-
-    //     printf("\nFrom directions %.2X:%.2X:%.2X:%.2X:%.2X:%.2X",
-    //            directions[i][0],
-    //            directions[i][1],
-    //            directions[i][2],
-    //            directions[i][3],
-    //            directions[i][4],
-    //            directions[i][5]);
-    // }
 }
 
 void *read_packages(void *struct_args)
@@ -272,10 +243,10 @@ void *read_packages(void *struct_args)
             fprintf(fptr, " \tNinguno de esos protocolos de capa superior.\n");
         }
 
-        fprintf(fptr, " \t| Longitud de la trama: %d\n", (un_int)args->recv_len);
+        fprintf(fptr," \t| Longitud de la trama: %d\n", (un_int)args->recv_len);
 
         un_int payload_len = (un_int)args->recv_len - 18;
-        fprintf(fptr, " \t| Longitud de carga util: %d\n", payload_len);
+        fprintf(fptr," \t| Longitud de carga util: %d\n", payload_len);
     }
 }
 
@@ -376,6 +347,7 @@ int main(int argc, char const *argv[])
             free(hargs[i]);
 
         print_final_info();
+        print_reps(number_of_packages);
         fclose(fptr);
 
         // Restaurar valores iniciales de la tarjeta
@@ -385,8 +357,7 @@ int main(int argc, char const *argv[])
         printf("\nEjecutando: %s\n", order);
 
         system(order);
-        print_reps(number_of_packages);
-        // system("cat data.txt");
+        system("cat data.txt");
     }
 
     return 0;
