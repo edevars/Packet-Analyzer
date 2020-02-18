@@ -163,6 +163,7 @@ void print_reps(int number_of_packages)
         }
     }
 
+    fprintf(fptr, "\nREPETICIÓN DE DIRECCIONES\n");
     for (i = 0; i < addcount; i++)
     {
         fprintf(fptr, "\nLa direccion %.2X:%.2X:%.2X:%.2X:%.2X:%.2X tuvo %d repeticiones",
@@ -175,6 +176,7 @@ void print_reps(int number_of_packages)
                 ok_dirs[i].reps);
     }
 
+    fprintf(fptr, "\n\n");
 }
 
 void *read_packages(void *struct_args)
@@ -208,10 +210,11 @@ void *read_packages(void *struct_args)
     {
         fprintf(fptr, " \t+ Tipo direccion: Multidifusion\n");
     }
-    identify_protocol(permut_half(eth->h_proto));
 
-    if (eth->h_proto < 1535)
+    if (eth->h_proto >= 1536)
     { // Trama Ethernet II: 1535
+        identify_protocol(permut_half(eth->h_proto));
+
         cont_ethr2++;
 
         fprintf(fptr, "\t|-Protocolo : 0x%.2X (%d) ",
@@ -243,10 +246,10 @@ void *read_packages(void *struct_args)
             fprintf(fptr, " \tNinguno de esos protocolos de capa superior.\n");
         }
 
-        fprintf(fptr," \t| Longitud de la trama: %d\n", (un_int)args->recv_len);
+        fprintf(fptr, " \t| Longitud de la trama: %d\n", (un_int)args->recv_len);
 
         un_int payload_len = (un_int)args->recv_len - 18;
-        fprintf(fptr," \t| Longitud de carga util: %d\n", payload_len);
+        fprintf(fptr, " \t| Longitud de carga util: %d\n", payload_len);
     }
 }
 
