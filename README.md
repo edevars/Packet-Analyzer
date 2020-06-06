@@ -1,42 +1,60 @@
-# Packet Analyzer (Sniffer)
+# Packet Analyzer (Sniffer) Datagram IP oriented
 
 ## Objetivo
 
-Identificar la funcionalidad de un sniffer para realizar un análisis de tráfico en una red de datos.
+Identificar los campos que conforman un datagrama IP y analizar su
+comportamiento.
 
 ## Desarrollo
 
-Utilizando lenguaje C para Linux, implemente un sniffer que capture los paquetes que están viajando en la red, específicamente se deben capturar tramas Ethernet. Se debe analizar la trama capturada y determinar si es una trama IEEE 802.3 (0x0000 a 0x05DC) o una trama Ethernet II (mayor o igual a 0x0600). Si la trama es IEEE 802.3 se debe indicar que dicha trama no puede ser analizada, por el contrario, si la trama es de tipo Ethernet II, se debe determinar el protocolo de capa superior al que pertenece:
+Utilizando lenguaje C para Linux, implemente un sniffer que capture los paquetes que están viajando en la red, específicamente se deben capturar tramas Ethernet. Se debe verificar que la carga útil de la trama capturada es un datagrama IPv4 (0x800), en caso de que no se cumpla esta condición, la trama es ignorada y se procesa la siguiente. Si se cumple con la condición anterior, se debe analizar la trama capturada y extraer la siguiente información:
 
-- (IPv4) Protocolo de Internet versión 4(0x0800)
-- (IPv6) Protocolo de Internet versión 6(0x86DD)
-- (ARP) Protocolo de resolución de direccione (0x0806)
-- Control de flujo Ethernet (0x8808)
-- Seguridad MAC (0x88E5)
+- Dirección IP fuente
+- Dirección IP destino
+- Longitud de cabecera en bytes
+- Longitud total del datagrama IP en bytes
+- Identificador del datagrama
+- Tiempo de vida
+- Protocolo de capa superior
 
-Además, para las tramas Ethernet II se debe extraer la siguiente información:
+Además, se debe determinar:
 
-- Dirección MAC fuente
-- Dirección MAC destino
-- Longitud de la trama
-- Longitud de carga útil (datos y relleno)
-- Determinar si la dirección de destino es una dirección de unidifusión, difusión o multidifusión.
+- Longitud de carga útil
+- Tipo de servicio utilizado
+- Si el datagrama está fragmentado o no
+- Número de fragmento (único, primero, intermedio o último)
+- Primer y último byte que contiene el datagrama
 
-### Condiciones
+Finalmente, se deben mostrar las siguientes estadísticas:
 
-1. El número de paquetes que se van a capturar y el nombre de la tarjeta de red debe ser introducido como un dato de entrada dentro del programa o en línea de comandos, no con valores predeterminados dentro del código.
+- Número de paquetes capturados de cada uno de los protocolos de capa superior.
+- Número de paquetes por cada dirección IP diferente, especificando claramente cuántos de esos paquetes fueron transmitidos y cuántos fueron recibidos.
+- Número de paquetes según su tamaño:
+  - 0-159
+  - 160-639
+  - 640-1279
+  - 1280-5119
+  - 5120 o mayor
 
-2. Se deben manejar dos procesos: capturador y analizador (manejo de hilos).
+Toda esta información debe ser almacenada en un archivo de texto, el sniffer debe ser programado para poder dar como dato de entrada el número de paquetes que deben ser capturados mediante una cadena de entrada.
 
-3. Toda la información de las tramas capturadas se debe guardar en un archivo de texto, separando claramente la información de cada una de tramas analizadas.
+## Condiciones
 
-4. En el archivo se debe incluir una línea que indique el número de tramas capturadas, el número de tramas Ethernet II analizadas y el número de tramas 802.3 que no fueron analizadas.
+Para identificar el protocolo de capa superior se debe considerar que:
 
-5. Una línea que indique cuantas de las tramas analizadas pertenecen a cada uno de los protocolos de capa superior descritos.
+- ICMPv4 tiene un valor en el campo protocolo 0x01
+- IGMP tiene un valor en el campo protocolo 0x02
+- IP tiene un valor en el campo protocolo 0x04
+- TCP tiene un valor en el campo protocolo 0x06
+- UDP tiene un valor en el campo protocolo 0x11
+- IPv6 tiene un valor en el campo protocolo 0x29
+- OSPF tiene un valor en el campo protocolo 0x59
 
-6. Además, se deberá identificar si hay más de una trama perteneciente a una misma dirección origen y dirección destino y mostrar el número de tramas correspondientes.
+Para poder implementar el sniffer es necesario utilizar un socket de capa de enlace de datos (SOCK_RAW), la familia de protocolos a utilizar debe ser PF_PACKET y se debe configurar la tarjeta de red en “modo promiscuo” para que reciba todos los paquetes que están viajando en la red y no solamente los que van dirigidos a ella; para esto se debe utilizar la función ioctl() y la estructura struct ifreq, dicha estructura contiene la información de los adaptadores de red, y la función ioctl() permite modificar algunos parámetros de estos adaptadores, para poder utilizarlas es necesario incluir las librerías <sys/ioctl.h> y <net/if.h>. Una vez que se cierra el sniffer es necesario restablecer los valores originales de la tarjeta de red, esto se puede logar con la siguiente instrucción: 
 
-## Como ejecutar
+system(“/sbin/ifconfig nombre_adaptador -promisc”)
+
+## Cómo ejecutar
 
 ```bash
 gcc -pthread main.c -o sniffer
